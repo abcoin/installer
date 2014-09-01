@@ -1,0 +1,2 @@
+C:\Users\kykoo_000\Documents\visual studio 2013\Projects\CFOS\bin\Debug\CFOS.msi
+C:\Users\kykoo_000\Documents\visual studio 2013\Projects\CFOS\bin\Debug\CFOS.wixpdb

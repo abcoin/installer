@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?define ProductVersion = "0.0.1"?>
+<?define ProductUpgradeCode = "{FE118162-3D73-4561-9CE1-D8AB73DB8612}"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="CFOS_x86" Language="1033" Version="$(var.ProductVersion)" Manufacturer="ABCoin Community" UpgradeCode="$(var.ProductUpgradeCode)">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" AdminImage="yes" />
+    <MediaTemplate EmbedCab='yes' />
+    <Upgrade Id="$(var.ProductUpgradeCode)">
+      <UpgradeVersion Minimum="$(var.ProductVersion)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED"/>
+      <UpgradeVersion Minimum="0.0.0" Maximum="$(var.ProductVersion)" IncludeMinimum="yes" IncludeMaximum="no"
+                      Property="OLDERVERSIONBEINGUPGRADED"/>
+    </Upgrade>
+    <Condition Message="A newer version of CFOS_x86 is already installed.">NOT NEWERVERSIONDETECTED</Condition>
+
+    <Feature Id="ProductFeature" Title="CFOS_x86" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="ApplicationDesktopShortcut" />
+      <ComponentRef Id="AbcoinAppdata"/>
+    </Feature>
+    <InstallExecuteSequence>
+      <RemoveExistingProducts After="InstallValidate"/>
+    </InstallExecuteSequence>
+
+    <!--Adding UI-->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+    <UIRef Id="CFOS_WixUI_InstallDir" />
+    <Property Id="INSTALLDESKTOPSHORTCUT" Value="1" />
+    <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1" />
+
+    
+  </Product>
+
+  <Fragment>
+    <!-- Main Installation Folder -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="CFOS_x86" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="CFOS_x86" />
+      </Directory>
+      <Directory Id="DesktopFolder" />
+      <Directory Id="AppdataFolder" >
+        <Directory Id="AbcoinAppdata" Name="abcoin" />
+      </Directory>
+    </Directory>
+
+    <!-- Program Files Shortcut Folder -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="{54E56B07-E63D-4571-B492-6CE0EE7BB9F9}">
+        <Condition>INSTALLSTARTMENUSHORTCUT</Condition>
+        <Shortcut Id="ClientStartMenuShortcut"
+                  Name="CFOS Client x86" Description="Crypto Financial Operating System" Target="[INSTALLFOLDER]CFOS_client.bat"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <Shortcut Id="ReindexStartMenuShortcut"
+                  Name="CFOS Reindex x86" Description="Crypto Financial Operating System" Target="[INSTALLFOLDER]CFOS_reindex.bat"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\CFOS_x86" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Desktop Shortcut -->
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="ApplicationDesktopShortcut" Guid="{FAD9B24F-ECBC-4CA7-8B8F-6458DDFFD4CE}">
+        <Condition>INSTALLDESKTOPSHORTCUT</Condition>
+        <Shortcut Id="desktopSC.client" Target="[INSTALLFOLDER]CFOS_client.bat"
+                  Directory="DesktopFolder" Name="CFOS Client x86" IconIndex="0" WorkingDirectory="APPLICATIONFOLDER" Advertise="no" />
+        <Shortcut Id="desktopSC.reindex" Target="[INSTALLFOLDER]CFOS_reindex.bat"
+          Directory="DesktopFolder" Name="CFOS Reindex x86" IconIndex="0" WorkingDirectory="APPLICATIONFOLDER" Advertise="no" />
+        <RemoveFolder Id="ApplicationDesktopFolder" Directory="DesktopFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="SOFTWARE\CFOS_x86" Name="DesktopSC" Value="1" Type="integer" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!--Write to abcoin.conf-->
+    <DirectoryRef Id="AppdataFolder">
+      <Component Id="AbcoinAppdata" Guid="{7E3A99C9-7B9B-4D9A-BF1A-CC1A9C89377F}" KeyPath="yes">
+        <CreateFolder Directory="AbcoinAppdata" />
+        <IniFile Id="Ini1"
+                     Action="createLine"
+                     Section="Test"
+                     Directory="AbcoinAppdata"
+                     Name="abcoin.conf"
+                     Key="TestKey"
+                     Value="TestValue" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <!-- Install Files -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="INSTALLFOLDER_Permission" Guid="{F69BC98C-981C-497F-BB9D-619728493303}">
+        <CreateFolder Directory="INSTALLFOLDER">
+          <Permission User="Everyone" GenericAll="yes" />
+        </CreateFolder>
+      </Component>
+      <Component Id="cmp.ABC.AsyncJasonServer.dll" Guid="{D34B6755-E293-44C3-ADB4-2E4037A48832}">
+        <File Id="fil.ABC.AsyncJasonServer.dll" KeyPath="yes" Source="Package\ABC.AsyncJasonServer.dll" />
+      </Component>
+      <Component Id="cmp.ABC.Core.dll" Guid="{2037AFEF-45F1-4835-B04D-4B94976359AF}">
+        <File Id="fil.ABC.Core.dll" KeyPath="yes" Source="Package\ABC.Core.dll" />
+      </Component>
+      <Component Id="cmp.ABC.Service.vshost.exe" Guid="{C78487CF-ED25-4984-84A5-33F6470EA011}">
+        <File Id="fil.ABC.Service.vshost.exe" KeyPath="yes" Source="Package\ABC.Service.vshost.exe" />
+      </Component>
+      <Component Id="cmp.ABC.Service.vshost.exe.config" Guid="{7715403F-D74D-482F-BB02-2CEB1CD68E3D}">
+        <File Id="fil.ABC.Service.vshost.exe.config" KeyPath="yes" Source="Package\ABC.Service.vshost.exe.config" />
+      </Component>
+      <Component Id="cmp.ABC.Service.vshost.exe.manifest" Guid="{8AA09071-34AF-4CAA-ADDD-454B6D8FDE46}">
+        <File Id="fil.ABC.Service.vshost.exe.manifest" KeyPath="yes" Source="Package\ABC.Service.vshost.exe.manifest" />
+      </Component>
+      <Component Id="cmp.AbcoindWrapper.dll.metagen" Guid="{CD9AFB39-3D6D-4AFE-BD94-B0476390A522}">
+        <File Id="fil.AbcoindWrapper.dll.metagen" KeyPath="yes" Source="Package\AbcoindWrapper.dll.metagen" />
+      </Component>
+      <Component Id="cmp.ABCoinWrapper.dll" Guid="{5113460A-1243-4294-A6E3-C129E0FE22DE}">
+        <File Id="fil.ABCoinWrapper.dll" KeyPath="yes" Source="Package\ABCoinWrapper.dll" />
+      </Component>
+      <Component Id="cmp.ABCService.exe.config" Guid="{3DDBFB26-4F24-4000-B4C0-BAF53E2BB202}">
+        <File Id="fil.ABCService.exe.config" KeyPath="yes" Source="Package\ABCService.exe.config" />
+      </Component>
+      <Component Id="cmp.api_ms_win_appmodel_runtime_l1_1_0.dll" Guid="{EC0BF6B0-7ED3-4BEE-B8F1-B2B2C8A74BE5}">
+        <File Id="fil.api_ms_win_appmodel_runtime_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-appmodel-runtime-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_debug_l1_1_1.dll" Guid="{C5028358-936C-4DA9-B1EE-DA729EF5E293}">
+        <File Id="fil.api_ms_win_core_debug_l1_1_1.dll" KeyPath="yes" Source="Package\api-ms-win-core-debug-l1-1-1.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_delayload_l1_1_1.dll" Guid="{E5EECDEC-23B0-4CFD-8412-C3513EA6A868}">
+        <File Id="fil.api_ms_win_core_delayload_l1_1_1.dll" KeyPath="yes" Source="Package\api-ms-win-core-delayload-l1-1-1.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_errorhandling_l1_1_1.dll" Guid="{03AA8EC2-5F89-488E-8821-BD99FF2897F8}">
+        <File Id="fil.api_ms_win_core_errorhandling_l1_1_1.dll" KeyPath="yes" Source="Package\api-ms-win-core-errorhandling-l1-1-1.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_heap_l1_2_0.dll" Guid="{9B4A3270-7F9A-40E9-9268-8C6497553734}">
+        <File Id="fil.api_ms_win_core_heap_l1_2_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-heap-l1-2-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_libraryloader_l1_2_0.dll" Guid="{9443FB0C-7199-49FE-B847-E782DD10E2E6}">
+        <File Id="fil.api_ms_win_core_libraryloader_l1_2_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-libraryloader-l1-2-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_memory_l1_1_2.dll" Guid="{10785EFD-3517-4FF3-81E6-156DF6674D9C}">
+        <File Id="fil.api_ms_win_core_memory_l1_1_2.dll" KeyPath="yes" Source="Package\api-ms-win-core-memory-l1-1-2.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_processthreads_l1_1_2.dll" Guid="{A17AFCFA-7007-4BFE-BA50-9A4B71F4E6FB}">
+        <File Id="fil.api_ms_win_core_processthreads_l1_1_2.dll" KeyPath="yes" Source="Package\api-ms-win-core-processthreads-l1-1-2.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_registry_l1_1_0.dll" Guid="{20B76C91-CEE3-496E-862D-0E08B0B20293}">
+        <File Id="fil.api_ms_win_core_registry_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-registry-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_rtlsupport_l1_2_0.dll" Guid="{ACFC4491-6B7F-4275-BEF1-09A59960B84B}">
+        <File Id="fil.api_ms_win_core_rtlsupport_l1_2_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-rtlsupport-l1-2-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_synch_l1_2_0.dll" Guid="{A6E5CFAB-C4B4-4169-B474-1EB60A01C7C1}">
+        <File Id="fil.api_ms_win_core_synch_l1_2_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-synch-l1-2-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_sysinfo_l1_1_0.dll" Guid="{76AB3059-CF89-40F1-BAB4-9205770F605A}">
+        <File Id="fil.api_ms_win_core_sysinfo_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-sysinfo-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_sysinfo_l1_2_1.dll" Guid="{DFBB0F82-9FB6-4061-970E-71F136106F88}">
+        <File Id="fil.api_ms_win_core_sysinfo_l1_2_1.dll" KeyPath="yes" Source="Package\api-ms-win-core-sysinfo-l1-2-1.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_winrt_error_l1_1_0.dll" Guid="{BA290250-F1F7-4342-98DD-7AD9D637855F}">
+        <File Id="fil.api_ms_win_core_winrt_error_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-winrt-error-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_winrt_l1_1_0.dll" Guid="{D2BEA52E-13C0-4276-B059-A7093107051F}">
+        <File Id="fil.api_ms_win_core_winrt_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-winrt-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_winrt_robuffer_l1_1_0.dll" Guid="{5CBE7180-5582-4F89-98C1-6288295B7B9E}">
+        <File Id="fil.api_ms_win_core_winrt_robuffer_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-winrt-robuffer-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_core_winrt_string_l1_1_0.dll" Guid="{9CD9F9F9-9200-4C26-9C1A-0317DBD9CE5B}">
+        <File Id="fil.api_ms_win_core_winrt_string_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-core-winrt-string-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_eventing_provider_l1_1_0.dll" Guid="{1865B933-C69E-4B32-AAA4-0E597284145E}">
+        <File Id="fil.api_ms_win_eventing_provider_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-eventing-provider-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_rtcore_ntuser_private_l1_1_0.dll" Guid="{AA1D8F6E-B267-4D9F-B646-5D9278B1BFC5}">
+        <File Id="fil.api_ms_win_rtcore_ntuser_private_l1_1_0.dll" KeyPath="yes" Source="Package\api-ms-win-rtcore-ntuser-private-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.api_ms_win_shcore_scaling_l1_1_1.dll" Guid="{A8434DBE-3947-46E8-8B1B-9A0CE0EE8DB6}">
+        <File Id="fil.api_ms_win_shcore_scaling_l1_1_1.dll" KeyPath="yes" Source="Package\api-ms-win-shcore-scaling-l1-1-1.dll" />
+      </Component>
+      <Component Id="cmp.App.config" Guid="{9AFB6E37-241F-436F-AC4C-8E58AD67B164}">
+        <File Id="fil.App.config" KeyPath="yes" Source="Package\App.config" />
+      </Component>
+      <Component Id="cmp.BeITMemcached.dll" Guid="{E8BD2FD5-1B9D-4892-8342-3FF88C28913E}">
+        <File Id="fil.BeITMemcached.dll" KeyPath="yes" Source="Package\BeITMemcached.dll" />
+      </Component>
+      <Component Id="cmp.BitcoinWrapper.dll" Guid="{E26EF6D6-B9E6-4D77-97BF-73B1973E0A76}">
+        <File Id="fil.BitcoinWrapper.dll" KeyPath="yes" Source="Package\BitcoinWrapper.dll" />
+      </Component>
+      <Component Id="cmp.boost_atomic_vc110_mt_gd_1_55.dll" Guid="{f25dd6ea-0379-46ee-b51d-6173257d325b}">
+        <File Id="fil.boost_atomic_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_atomic-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_chrono_vc110_mt_gd_1_50.dll" Guid="{59d5882e-dc9c-4ea2-94b2-5bf86a3eca06}">
+        <File Id="fil.boost_chrono_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_chrono-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_chrono_vc110_mt_gd_1_55.dll" Guid="{c9f056a4-b214-4280-a126-3c70d351df36}">
+        <File Id="fil.boost_chrono_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_chrono-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_context_vc110_mt_gd_1_55.dll" Guid="{447ee448-ce1b-43be-87a2-60eab06a8564}">
+        <File Id="fil.boost_context_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_context-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_coroutine_vc110_mt_gd_1_55.dll" Guid="{f90bd193-2629-4d47-9a9e-c9232df730ee}">
+        <File Id="fil.boost_coroutine_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_coroutine-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_date_time_vc110_mt_gd_1_50.dll" Guid="{ec6dbcfa-a1ee-4739-b79e-9ce0f36348c1}">
+        <File Id="fil.boost_date_time_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_date_time-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_date_time_vc110_mt_gd_1_55.dll" Guid="{00c8314c-b96d-4d99-b85a-1a6af5f57e8d}">
+        <File Id="fil.boost_date_time_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_date_time-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_filesystem_vc110_mt_gd_1_50.dll" Guid="{06a480f2-7d83-4fee-907d-cf53508cf8fe}">
+        <File Id="fil.boost_filesystem_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_filesystem-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_filesystem_vc110_mt_gd_1_55.dll" Guid="{e707ba57-d4f2-4feb-975d-a63d33dfac1f}">
+        <File Id="fil.boost_filesystem_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_filesystem-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_graph_vc110_mt_gd_1_50.dll" Guid="{9a6b0855-6e08-48f6-a0b1-a739fde7d048}">
+        <File Id="fil.boost_graph_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_graph-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_graph_vc110_mt_gd_1_55.dll" Guid="{62aef9e6-1483-4f54-8f9e-dd6f02109e37}">
+        <File Id="fil.boost_graph_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_graph-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_iostreams_vc110_mt_gd_1_50.dll" Guid="{6014156d-4645-475f-b453-4a08038cdff5}">
+        <File Id="fil.boost_iostreams_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_iostreams-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_iostreams_vc110_mt_gd_1_55.dll" Guid="{f1f1a3a2-eab6-45d8-a638-4911d2ba23cf}">
+        <File Id="fil.boost_iostreams_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_iostreams-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_locale_vc110_mt_gd_1_50.dll" Guid="{a5f34a07-d936-4713-b6d2-caa7a94a61f3}">
+        <File Id="fil.boost_locale_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_locale-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_locale_vc110_mt_gd_1_55.dll" Guid="{084f3a68-5b42-4094-b8e8-8e6046b94dbb}">
+        <File Id="fil.boost_locale_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_locale-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_log_vc110_mt_gd_1_55.dll" Guid="{bd869704-2abc-44ea-8d43-17a7ea062d50}">
+        <File Id="fil.boost_log_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_log-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_log_setup_vc110_mt_gd_1_55.dll" Guid="{efbd50a6-b154-424b-858f-00d108a5c623}">
+        <File Id="fil.boost_log_setup_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_log_setup-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_c99_vc110_mt_gd_1_50.dll" Guid="{4f1e01c5-afe0-47d5-92a7-b27ee8d6d384}">
+        <File Id="fil.boost_math_c99_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_math_c99-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_c99_vc110_mt_gd_1_55.dll" Guid="{42f29c41-c08e-4f0b-a122-426d36d9cba9}">
+        <File Id="fil.boost_math_c99_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_math_c99-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_c99f_vc110_mt_gd_1_50.dll" Guid="{3b004024-206c-4a89-adce-1cc31c55c9a4}">
+        <File Id="fil.boost_math_c99f_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_math_c99f-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_c99f_vc110_mt_gd_1_55.dll" Guid="{b5fdef82-7f78-4da3-b824-eaebc722b942}">
+        <File Id="fil.boost_math_c99f_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_math_c99f-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_c99l_vc110_mt_gd_1_50.dll" Guid="{2195540e-d5ed-4157-b75a-3a8217449653}">
+        <File Id="fil.boost_math_c99l_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_math_c99l-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_c99l_vc110_mt_gd_1_55.dll" Guid="{442c00f2-6d6a-4585-8639-6bb6db38708a}">
+        <File Id="fil.boost_math_c99l_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_math_c99l-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_tr1_vc110_mt_gd_1_50.dll" Guid="{a80fdd1e-32c8-4b7c-9cd5-06ec2fc9ee79}">
+        <File Id="fil.boost_math_tr1_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_math_tr1-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_tr1_vc110_mt_gd_1_55.dll" Guid="{a69830a9-a769-4b33-ae41-6613dbe1eddb}">
+        <File Id="fil.boost_math_tr1_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_math_tr1-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_tr1f_vc110_mt_gd_1_50.dll" Guid="{19eb97ac-9a55-4bea-bdda-4eaa20ce70d8}">
+        <File Id="fil.boost_math_tr1f_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_math_tr1f-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_tr1f_vc110_mt_gd_1_55.dll" Guid="{8a0a1c05-f958-499d-b505-726508d28377}">
+        <File Id="fil.boost_math_tr1f_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_math_tr1f-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_tr1l_vc110_mt_gd_1_50.dll" Guid="{a18645cd-9301-4900-88a1-63c553f8fc43}">
+        <File Id="fil.boost_math_tr1l_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_math_tr1l-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_math_tr1l_vc110_mt_gd_1_55.dll" Guid="{30c955e4-cb8f-4556-9590-0ef294b0a459}">
+        <File Id="fil.boost_math_tr1l_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_math_tr1l-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_prg_exec_monitor_vc110_mt_gd_1_50.dll" Guid="{406f84d3-20c1-4290-b05c-bf28ce1107b1}">
+        <File Id="fil.boost_prg_exec_monitor_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_prg_exec_monitor-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_prg_exec_monitor_vc110_mt_gd_1_55.dll" Guid="{8df044f2-73b4-48fd-82fb-2242a6193933}">
+        <File Id="fil.boost_prg_exec_monitor_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_prg_exec_monitor-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_program_options_vc110_mt_gd_1_50.dll" Guid="{62d25d21-a256-4951-99e7-ded2a8146360}">
+        <File Id="fil.boost_program_options_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_program_options-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_program_options_vc110_mt_gd_1_55.dll" Guid="{3b272c94-ff85-43f5-a35e-f1cfe3355824}">
+        <File Id="fil.boost_program_options_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_program_options-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_random_vc110_mt_gd_1_50.dll" Guid="{29feff34-0c81-43a5-9d98-1705edd0d99e}">
+        <File Id="fil.boost_random_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_random-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_random_vc110_mt_gd_1_55.dll" Guid="{9a295108-3c15-49a8-87c3-69fa6fa5bbc1}">
+        <File Id="fil.boost_random_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_random-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_regex_vc110_mt_gd_1_50.dll" Guid="{fee40d7e-56e6-4406-9536-68abad5510fb}">
+        <File Id="fil.boost_regex_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_regex-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_regex_vc110_mt_gd_1_55.dll" Guid="{7af9dd42-ed75-44ea-bdd0-96599be533f9}">
+        <File Id="fil.boost_regex_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_regex-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_serialization_vc110_mt_gd_1_50.dll" Guid="{99222dc6-fc12-4e92-aff6-a6fe0361a616}">
+        <File Id="fil.boost_serialization_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_serialization-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_serialization_vc110_mt_gd_1_55.dll" Guid="{b84d2e72-fda4-4840-9a30-e3c6554737df}">
+        <File Id="fil.boost_serialization_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_serialization-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_signals_vc110_mt_gd_1_55.dll" Guid="{ac12a010-7b7f-4cdc-b4aa-c3c5f5a8e346}">
+        <File Id="fil.boost_signals_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_signals-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_system_vc110_mt_gd_1_50.dll" Guid="{1d7a59c7-54e9-4194-bda6-ca311f875b54}">
+        <File Id="fil.boost_system_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_system-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_system_vc110_mt_gd_1_55.dll.dll" Guid="{89d32965-6f3c-4b2b-9931-beccaeb658d5}">
+        <File Id="fil.boost_system_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_system-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_thread_vc110_mt_gd_1_50.dll" Guid="{617d5530-2e52-4947-badd-c874a1a66fe8}">
+        <File Id="fil.boost_thread_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_thread-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_thread_vc110_mt_gd_1_55.dll" Guid="{26703b95-581c-4c80-82d5-9a0ba13c9c28}">
+        <File Id="fil.boost_thread_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_thread-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_timer_vc110_mt_gd_1_50.dll" Guid="{4cf71812-a452-4128-86ba-9810c900c2dc}">
+        <File Id="fil.boost_timer_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_timer-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_timer_vc110_mt_gd_1_55.dll" Guid="{5d0ce179-56c4-4614-b40f-c6d7f8dad4a9}">
+        <File Id="fil.boost_timer_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_timer-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_unit_test_framework_vc110_mt_gd_1_50.dll" Guid="{8a283fc5-9a32-4f30-8e8a-2512ebca830c}">
+        <File Id="fil.boost_unit_test_framework_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_unit_test_framework-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_unit_test_framework_vc110_mt_gd_1_55.dll" Guid="{adfad5a6-fbf3-466b-a75e-5e4c119ff4f2}">
+        <File Id="fil.boost_unit_test_framework_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_unit_test_framework-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_wave_vc110_mt_gd_1_50.dll" Guid="{f1a0fd13-d735-4aad-9f09-bc0e381ec1f1}">
+        <File Id="fil.boost_wave_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_wave-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_wave_vc110_mt_gd_1_55.dll" Guid="{c09a08e4-2927-4611-b684-d6c1e3a9c263}">
+        <File Id="fil.boost_wave_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_wave-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.boost_wserialization_vc110_mt_gd_1_50.dll" Guid="{3b632892-9925-405d-9e7d-6f06dde360ac}">
+        <File Id="fil.boost_wserialization_vc110_mt_gd_1_50.dll" KeyPath="yes" Source="Package\boost_wserialization-vc110-mt-gd-1_50.dll" />
+      </Component>
+      <Component Id="cmp.boost_wserialization_vc110_mt_gd_1_55.dll" Guid="{beb4424b-2bb2-4e75-bbb3-6903a45cfb04}">
+        <File Id="fil.boost_wserialization_vc110_mt_gd_1_55.dll" KeyPath="yes" Source="Package\boost_wserialization-vc110-mt-gd-1_55.dll" />
+      </Component>
+      <Component Id="cmp.cfos.exe" Guid="{3886b077-247e-4f31-ac11-bcfb9ff2975b}">
+        <File Id="fil.cfos.exe" KeyPath="yes" Source="Package\cfos.exe" />
+      </Component>
+      <Component Id="cmp.cfos.exe.config" Guid="{0e1f3a30-e5d5-43a3-b437-e45595c23ba7}">
+        <File Id="fil.cfos.exe.config" KeyPath="yes" Source="Package\cfos.exe.config" />
+        <ServiceInstall Vital='yes' ErrorControl='ignore' Type='ownProcess'
+        DisplayName='Crypto Financial Operating System 32bit Version'
+        Description='ABCoin.info Community' Name='CFOS_x86' Start='auto' />
+        <ServiceControl Id='svs.CFOS_x86' Remove='both' Name='CFOS_x64'
+                        Start='install' Stop='both' Wait='yes' />
+      </Component>
+      <Component Id="cmp.ConcurrentHashtable_Silverlight.dll" Guid="{9c364a00-a408-4b57-932a-318ec359f0e7}">
+        <File Id="fil.ConcurrentHashtable_Silverlight.dll" KeyPath="yes" Source="Package\ConcurrentHashtable_Silverlight.dll" />
+      </Component>
+      <Component Id="cmp.d3dcompiler_46.dll" Guid="{bc01c50b-4a7b-48a5-a843-6b53c0aebfb1}">
+        <File Id="fil.d3dcompiler_46.dll" KeyPath="yes" Source="Package\d3dcompiler_46.dll" />
+      </Component>
+      <Component Id="cmp.dcomp.dll" Guid="{b2aa44f6-6c7c-40dc-9658-3e9281e21f7b}">
+        <File Id="fil.dcomp.dll" KeyPath="yes" Source="Package\dcomp.dll" />
+      </Component>
+      <Component Id="cmp.ext_ms_win_ntuser_private_l1_1_1.dll" Guid="{e2b51059-a4d0-4580-b852-4d60b9f2d44b}">
+        <File Id="fil.ext_ms_win_ntuser_private_l1_1_1.dll" KeyPath="yes" Source="Package\ext-ms-win-ntuser-private-l1-1-1.dll" />
+      </Component>
+      <Component Id="cmp.ext_ms_win_ntuser_rectangle_ext_l1_1_0.dll" Guid="{eef9c240-e21d-4e25-87b7-7ed25d83f3c5}">
+        <File Id="fil.ext_ms_win_ntuser_rectangle_ext_l1_1_0.dll" KeyPath="yes" Source="Package\ext-ms-win-ntuser-rectangle-ext-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.ext_ms_win_ntuser_window_l1_1_1.dll" Guid="{ca787e85-bb3d-4430-b214-85a842962c59}">
+        <File Id="fil.ext_ms_win_ntuser_window_l1_1_1.dll" KeyPath="yes" Source="Package\ext-ms-win-ntuser-window-l1-1-1.dll" />
+      </Component>
+      <Component Id="cmp.ext_ms_win_rtcore_ntuser_sysparams_l1_1_0.dll" Guid="{8144563f-a4ed-44ae-a44e-46e7768d652e}">
+        <File Id="fil.ext_ms_win_rtcore_ntuser_sysparams_l1_1_0.dll" KeyPath="yes" Source="Package\ext-ms-win-rtcore-ntuser-sysparams-l1-1-0.dll" />
+      </Component>
+      <Component Id="cmp.icudt51.dll" Guid="{c0f6eddd-d5c3-4de2-b09c-d0db226264bd}">
+        <File Id="fil.icudt51.dll" KeyPath="yes" Source="Package\icudt51.dll" />
+      </Component>
+      <Component Id="cmp.icuin51.dll" Guid="{c000ffcd-95cf-4876-a663-c8d83d2da420}">
+        <File Id="fil.icuin51.dll" KeyPath="yes" Source="Package\icuin51.dll" />
+      </Component>
+      <Component Id="cmp.icuuc51.dll" Guid="{b91ca090-5228-4509-9552-062d1786b51d}">
+        <File Id="fil.icuuc51.dll" KeyPath="yes" Source="Package\icuuc51.dll" />
+      </Component>
+      <Component Id="cmp.IEShims.dll" Guid="{bfc3ffc3-d5c6-4674-9c4a-44babe001da3}">
+        <File Id="fil.IEShims.dll" KeyPath="yes" Source="Package\IEShims.dll" />
+      </Component>
+      <Component Id="cmp.libEGL.dll" Guid="{0ee7ec3e-f363-468c-af57-2a1af4eed65a}">
+        <File Id="fil.libEGL.dll" KeyPath="yes" Source="Package\libEGL.dll" />
+      </Component>
+      <Component Id="cmp.libEGLd.dll" Guid="{704f2a7f-f820-4a70-9dc2-5938a771fca2}">
+        <File Id="fil.libEGLd.dll" KeyPath="yes" Source="Package\libEGLd.dll" />
+      </Component>
+      <Component Id="cmp.libGLESv2.dll" Guid="{a640266b-f68c-4a38-99d1-2861ce760f72}">
+        <File Id="fil.libGLESv2.dll" KeyPath="yes" Source="Package\libGLESv2.dll" />
+      </Component>
+      <Component Id="cmp.libGLESv2d.dll" Guid="{0fff3332-ef16-451e-80b0-a8fa86d8dc19}">
+        <File Id="fil.libGLESv2d.dll" KeyPath="yes" Source="Package\libGLESv2d.dll" />
+      </Component>
+      <Component Id="cmp.mfplat.dll" Guid="{328d6858-ef57-42fd-9d86-a2020cf470de}">
+        <File Id="fil.mfplat.dll" KeyPath="yes" Source="Package\mfplat.dll" />
+      </Component>
+      <Component Id="cmp.Microsoft.Expression.Interactions.xml" Guid="{acd9df99-fea6-4ff8-8030-a94948a03f40}">
+        <File Id="fil.Microsoft.Expression.Interactions.xml" KeyPath="yes" Source="Package\Microsoft.Expression.Interactions.xml" />
+      </Component>
+      <Component Id="cmp.msvcp110d.dll" Guid="{98E3F8F0-2308-40D0-888E-950369071141}">
+        <File Id="fil.msvcp110d.dll" KeyPath="yes" Source="Package\msvcp110d.dll" />
+      </Component>
+      <Component Id="cmp.msvcr110d.dll" Guid="{74AB4A1F-F209-4320-B337-0C32B6937296}">
+        <File Id="fil.msvcr110d.dll" KeyPath="yes" Source="Package\msvcr110d.dll" />
+      </Component>
+      <Component Id="cmp.Newtonsoft.Json.dll" Guid="{802437e2-f172-4571-be83-10fb70e5ede1}">
+        <File Id="fil.Newtonsoft.Json.dll" KeyPath="yes" Source="Package\Newtonsoft.Json.dll" />
+      </Component>
+      <Component Id="cmp.NLog.dll" Guid="{ea910276-b561-4548-9784-45621f02f7d8}">
+        <File Id="fil.NLog.dll" KeyPath="yes" Source="Package\NLog.dll" />
+      </Component>
+      <Component Id="cmp.NLog.xml" Guid="{fa7970d2-2769-4179-9dec-94981f15dd05}">
+        <File Id="fil.NLog.xml" KeyPath="yes" Source="Package\NLog.xml" />
+      </Component>
+      <Component Id="cmp.policyFile.xml" Guid="{55b361be-77f0-4e00-b784-bf1fec055b06}">
+        <File Id="fil.policyFile.xml" KeyPath="yes" Source="Package\policyFile.xml" />
+      </Component>
+      <Component Id="cmp.qml2puppet.exe.embed.manifest" Guid="{17212416-1450-4a1d-a687-7f1cee129e32}">
+        <File Id="fil.qml2puppet.exe.embed.manifest" KeyPath="yes" Source="Package\qml2puppet.exe.embed.manifest" />
+      </Component>
+      <Component Id="cmp.Rbccm.Polypaths.Minerva.exe.config" Guid="{be351ef3-319b-42dc-8133-89d2a3d642eb}">
+        <File Id="fil.Rbccm.Polypaths.Minerva.exe.config" KeyPath="yes" Source="Package\Rbccm.Polypaths.Minerva.exe.config" />
+      </Component>
+      <Component Id="cmp.Rbccm.Polypaths.Minerva.vshost.exe.config" Guid="{3a55b02e-f169-455b-be69-3b4f411e5e09}">
+        <File Id="fil.Rbccm.Polypaths.Minerva.vshost.exe.config" KeyPath="yes" Source="Package\Rbccm.Polypaths.Minerva.vshost.exe.config" />
+      </Component>
+      <Component Id="cmp.StockTraderRI.Infrastructure.dll" Guid="{6a8dea9e-add1-44c5-8317-545574a70a41}">
+        <File Id="fil.StockTraderRI.Infrastructure.dll" KeyPath="yes" Source="Package\StockTraderRI.Infrastructure.dll" />
+      </Component>
+      <Component Id="cmp.System.Xml.Linq.dll" Guid="{c4c6bed0-60a8-4b79-b8a6-8fd9cb399b4b}">
+        <File Id="fil.System.Xml.Linq.dll" KeyPath="yes" Source="Package\System.Xml.Linq.dll" />
+      </Component>
+      <Component Id="cmp.System.Xml.Serialization.dll" Guid="{3678ef05-7d2d-4804-9c44-8eb81de0d99f}">
+        <File Id="fil.System.Xml.Serialization.dll" KeyPath="yes" Source="Package\System.Xml.Serialization.dll" />
+      </Component>
+      <Component Id="cmp.System.Xml.XPath.dll" Guid="{b9db4a57-f71a-47b8-8b56-29dc939e6036}">
+        <File Id="fil.System.Xml.XPath.dll" KeyPath="yes" Source="Package\System.Xml.XPath.dll" />
+      </Component>
+      <Component Id="cmp.wlanapi.dll" Guid="{ce50db9d-d047-4713-aa23-398cde2d6a2a}">
+        <File Id="fil.wlanapi.dll" KeyPath="yes" Source="Package\wlanapi.dll" />
+      </Component>
+      <Component Id="cmp.Wrapper.dll" Guid="{c81c68d0-76e8-4135-9baa-5db0dbd8c9cc}">
+        <File Id="fil.Wrapper.dll" KeyPath="yes" Source="Package\Wrapper.dll" />
+      </Component>
+      <Component Id="cmp.Wrapper.dll.metagen" Guid="{e6a95a80-7ef2-4cfe-8780-a59e56abec56}">
+        <File Id="fil.Wrapper.dll.metagen" KeyPath="yes" Source="Package\Wrapper.dll.metagen" />
+      </Component>
+      <Component Id="cmp.CFOS_reindex.bat" Guid="{E4077A3C-D23B-4962-A9BF-DD71601F709F}">
+        <File Id="fil.CFOS_reindex.bat" KeyPath="yes" Source="Package\CFOS_reindex.bat" />
+      </Component>
+      <Component Id="cmp.CFOS_client.bat" Guid="{F887C750-4CFF-437E-8A1A-5E65D83F6790}">
+        <File Id="fil.CFOS_client.bat" KeyPath="yes" Source="Package\CFOS_client.bat" />
+      </Component>
+      <Component Id="cmp.installservice.cmd" Guid="{182DDD1F-DA4F-4B8F-9713-709B53FAC711}">
+        <File Id="fil.installservice.cmd" KeyPath="yes" Source="Package\installservice.cmd" />
+      </Component>
+      <Component Id="cmp.uninstallservice.cmd" Guid="{7F76E11F-2CBB-4CD3-8AAE-A9255C0838E6}">
+        <File Id="fil.uninstallservice.cmd" KeyPath="yes" Source="Package\uninstallservice.cmd" />
+      </Component>
+      <Component Id="cmp.setenv.cmd" Guid="{9B344185-7BA6-44DA-A05C-71C4E80C04D3}">
+        <File Id="fil.setenv.cmd" KeyPath="yes" Source="Package\setenv.cmd" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

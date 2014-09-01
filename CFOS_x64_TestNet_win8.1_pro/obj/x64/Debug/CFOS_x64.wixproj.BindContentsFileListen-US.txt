@@ -1,0 +1,16 @@
+Package\ABC.AsyncJasonServer.dll
+Package\ABC.Core.dll
+Package\ABCoinWrapper.dll
+Package\cfos.exe
+Package\cfos.exe.config
+Package\CFOS_client.bat
+Package\CFOS_reindex.bat
+Package\installservice.cmd
+Package\msvcp110d.dll
+Package\msvcr110d.dll
+Package\Newtonsoft.Json.dll
+Package\NLog.dll
+Package\policyFile.xml
+Package\setenv.cmd
+Package\uninstallservice.cmd
+Package\Wrapper.dll

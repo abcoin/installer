@@ -1,0 +1,10 @@
+obj\Debug\CFOS_InstallDirDlg.wixobj
+obj\Debug\CFOS_WixUI_InstallDir.wixobj
+obj\Debug\Product.wixobj
+obj\Debug\CFOS_x86.wixproj.BindContentsFileListen-US.txt
+obj\Debug\CFOS_x86.wixproj.BindOutputsFileListen-US.txt
+obj\Debug\CFOS_x86.wixproj.BindBuiltOutputsFileListen-US.txt
+C:\Users\kykoo_000\Documents\visual studio 2013\Projects\CFOS_x86_win7\bin\Debug\CFOS_x86.msi
+C:\Users\kykoo_000\Documents\visual studio 2013\Projects\CFOS_x86_win7\bin\Debug\CFOS_x86.wixpdb
+C:\Users\kykoo_000\Documents\visual studio 2013\Projects\CFOS_x86_TestNet_win7_pro\bin\Debug\CFOS_x86.msi
+C:\Users\kykoo_000\Documents\visual studio 2013\Projects\CFOS_x86_TestNet_win7_pro\bin\Debug\CFOS_x86.wixpdb

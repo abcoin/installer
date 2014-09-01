@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?define ProductVersion = "0.0.1"?>
+<?define ProductUpgradeCode = "{55AD5C4C-D68F-41A5-B0E3-08C5DB58AA7B}"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="CFOS_x64" Language="1033" Version="$(var.ProductVersion)" Manufacturer="ABCoin Community" UpgradeCode="$(var.ProductUpgradeCode)">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" AdminImage="yes" />
+    <MediaTemplate EmbedCab='yes' />
+    <Upgrade Id="$(var.ProductUpgradeCode)">
+      <UpgradeVersion Minimum="$(var.ProductVersion)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED"/>
+      <UpgradeVersion Minimum="0.0.0" Maximum="$(var.ProductVersion)" IncludeMinimum="yes" IncludeMaximum="no"
+                      Property="OLDERVERSIONBEINGUPGRADED"/>
+    </Upgrade>
+    <Condition Message="A newer version of CFOS_x64 is already installed.">NOT NEWERVERSIONDETECTED</Condition>
+
+    <Feature Id="ProductFeature" Title="CFOS_x64" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="ApplicationDesktopShortcut" />
+      <ComponentRef Id="AbcoinAppdata"/>
+    </Feature>
+    <InstallExecuteSequence>
+      <RemoveExistingProducts After="InstallValidate"/>
+    </InstallExecuteSequence>
+
+    <!--Adding UI-->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+    <UIRef Id="CFOS_WixUI_InstallDir" />
+    <Property Id="INSTALLDESKTOPSHORTCUT" Value="1" />
+    <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1" />
+
+    
+  </Product>
+
+  <Fragment>
+    <!-- Main Installation Folder -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="CFOS_x64"/>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="CFOS_x64" />
+      </Directory>
+      <Directory Id="DesktopFolder" />
+      <Directory Id="AppdataFolder" >
+        <Directory Id="AbcoinAppdata" Name="abcoin" />
+      </Directory>
+    </Directory>
+
+    <!-- Program Files Shortcut Folder -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="{67A5BB7C-1C3D-4D0F-AD43-41F3186BD588}">
+        <Condition>INSTALLSTARTMENUSHORTCUT</Condition>
+        <Shortcut Id="ClientStartMenuShortcut"
+                  Name="CFOS Client x64" Description="Crypto Financial Operating System" Target="[INSTALLFOLDER]CFOS_client.bat"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <Shortcut Id="ReindexStartMenuShortcut"
+          Name="CFOS Reindex x64" Description="Crypto Financial Operating System" Target="[INSTALLFOLDER]CFOS_reindex.bat"
+          WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\CFOS_x64" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>      
+    </DirectoryRef>
+
+    <!-- Desktop Shortcut -->
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="ApplicationDesktopShortcut" Guid="{0FA6A758-79E0-4035-B84A-DBFDCCB17E31}">
+        <Condition>INSTALLDESKTOPSHORTCUT</Condition>
+        <Shortcut Id="desktopSC.client" Target="[INSTALLFOLDER]CFOS_client.bat"
+                  Directory="DesktopFolder" Name="CFOS Client x64" IconIndex="0" WorkingDirectory="APPLICATIONFOLDER" Advertise="no" />
+        <Shortcut Id="desktopSC.reindex" Target="[INSTALLFOLDER]CFOS_reindex.bat"
+          Directory="DesktopFolder" Name="CFOS Reindex x64" IconIndex="0" WorkingDirectory="APPLICATIONFOLDER" Advertise="no" />
+        <RemoveFolder Id="ApplicationDesktopFolder" Directory="DesktopFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="SOFTWARE\CFOS_x64" Name="DesktopSC" Value="1" Type="integer" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!--Write to abcoin.conf-->
+    <DirectoryRef Id="AppdataFolder">
+      <Component Id="AbcoinAppdata" Guid="{7E3A99C9-7B9B-4D9A-BF1A-CC1A9C89377F}" KeyPath="yes">
+        <CreateFolder Directory="AbcoinAppdata" />
+        <IniFile Id="Ini1"
+                     Action="createLine"
+                     Section="Test"
+                     Directory="AbcoinAppdata"
+                     Name="abcoin.conf"
+                     Key="TestKey"
+                     Value="TestValue" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <!-- Install Files -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="INSTALLFOLDER_Permission" Guid="{780EB448-9EE7-415C-A06F-F015DF48F9DD}">
+        <CreateFolder Directory="INSTALLFOLDER">
+          <Permission User="Everyone" GenericAll="yes" />
+        </CreateFolder>
+      </Component>
+      <Component Id="cmp.ABC.AsyncJasonServer.dll" Guid="{3803C200-6262-408F-B87E-879A48882EEB}" Win64="yes">
+        <File Id="fil.ABC.AsyncJasonServer.dll" KeyPath="yes" Source="Package\ABC.AsyncJasonServer.dll" />
+      </Component>
+      <Component Id="cmp.ABC.Core.dll" Guid="{3881DB0F-C641-4804-BBF5-76D683F8B9BA}" Win64="yes">
+        <File Id="fil.ABC.Core.dll" KeyPath="yes" Source="Package\ABC.Core.dll" />
+      </Component>
+      <Component Id="cmp.ABCoinWrapper.dll" Guid="{C074355B-0213-474A-9ACF-5437CD59460F}" Win64="yes">
+        <File Id="fil.ABCoinWrapper.dll" KeyPath="yes" Source="Package\ABCoinWrapper.dll" />
+      </Component>
+      <Component Id="cmp.cfos.exe" Guid="{289B3845-027E-45E7-9D53-00E2B0086B2D}" Win64="yes">
+        <File Id="fil.cfos.exe" KeyPath="yes" Source="Package\cfos.exe" />
+        <ServiceInstall Vital='yes' ErrorControl='ignore' Type='ownProcess'
+                DisplayName='Crypto Financial Operating System 64bit Version'
+                Description='ABCoin.info Community' Name='CFOS_x64' Start='auto' />
+        <ServiceControl Id='svs.CFOS_x64' Remove='both' Name='CFOS_x64'
+                        Start='install' Stop='both' Wait='no' />
+      </Component>
+      <Component Id="cmp.cfos.exe.config" Guid="{D3B695F8-B085-4E93-A940-5BEAD16B48CF}" Win64="yes">
+        <File Id="fil.cfos.exe.config" KeyPath="yes" Source="Package\cfos.exe.config" />
+      </Component>
+      <Component Id="cmp.msvcp110d.dll" Guid="{4827C50A-D6BF-4BE4-A839-4F7F5A48B6F4}" Win64="yes">
+        <File Id="fil.msvcp110d.dll" KeyPath="yes" Source="Package\msvcp110d.dll" />
+      </Component>
+      <Component Id="cmp.msvcr110d.dll" Guid="{ED0FC8EA-5FD1-4CD4-B47B-24388D284F30}" Win64="yes">
+        <File Id="fil.msvcr110d.dll" KeyPath="yes" Source="Package\msvcr110d.dll" />
+      </Component>
+      <Component Id="cmp.Newtonsoft.Json.dll" Guid="{8734E270-F89F-4DF1-9890-C5D5DD701CF2}" Win64="yes">
+        <File Id="fil.Newtonsoft.Json.dll" KeyPath="yes" Source="Package\Newtonsoft.Json.dll" />
+      </Component>
+      <Component Id="cmp.NLog.dll" Guid="{31F766EF-3472-4D3E-AF44-8D054D2683A1}" Win64="yes">
+        <File Id="fil.NLog.dll" KeyPath="yes" Source="Package\NLog.dll" />
+      </Component>
+      <Component Id="cmp.policyFile.xml" Guid="{E6AC7046-4817-43BE-BA22-E2283973E457}" Win64="yes">
+        <File Id="fil.policyFile.xml" KeyPath="yes" Source="Package\policyFile.xml" />
+      </Component>
+      <Component Id="cmp.Wrapper.dll" Guid="{6976F501-4FB2-41C9-B9D7-8E3974358F67}" Win64="yes">
+        <File Id="fil.Wrapper.dll" KeyPath="yes" Source="Package\Wrapper.dll" />
+      </Component>
+      <Component Id="cmp.CFOS_reindex.bat" Guid="{584AF34A-290D-47CC-B4BA-EA31D92B8660}" Win64="yes">
+        <File Id="fil.CFOS_reindex.bat" KeyPath="yes" Source="Package\CFOS_reindex.bat" />
+      </Component>
+      <Component Id="cmp.CFOS_client.bat" Guid="{A1A80894-8C96-4F27-89B6-6F831236C769}" Win64="yes">
+        <File Id="fil.CFOS_client.bat" KeyPath="yes" Source="Package\CFOS_client.bat" />
+      </Component>
+      <Component Id="cmp.installservice.cmd" Guid="{074B999F-5EAE-4D7E-A44F-4F31B3FD7670}" Win64="yes">
+        <File Id="fil.installservice.cmd" KeyPath="yes" Source="Package\installservice.cmd" />
+      </Component>
+      <Component Id="cmp.uninstallservice.cmd" Guid="{9CAF2C97-CC11-4ED9-9968-13D28FBF33B1}" Win64="yes">
+        <File Id="fil.uninstallservice.cmd" KeyPath="yes" Source="Package\uninstallservice.cmd" />
+      </Component>
+      <Component Id="cmp.setenv.cmd" Guid="{2BA64042-3C61-49B7-9E6D-F70D7E8B4D98}" Win64="yes">
+        <File Id="fil.setenv.cmd" KeyPath="yes" Source="Package\setenv.cmd" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
