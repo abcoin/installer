@@ -1,2 +1,0 @@
-C:\Users\kykoo_000\Documents\visual studio 2013\Projects\CFOS_x64_TestNet_win8.1_pro\bin\x64\Debug\CFOS_x64.msi
-C:\Users\kykoo_000\Documents\visual studio 2013\Projects\CFOS_x64_TestNet_win8.1_pro\bin\x64\Debug\CFOS_x64.wixpdb
